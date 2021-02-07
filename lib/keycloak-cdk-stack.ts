@@ -9,7 +9,7 @@ import { SecurityGroup, SubnetConfiguration, SubnetType } from '@aws-cdk/aws-ec2
 import { Duration } from '@aws-cdk/core';
 import { ApplicationProtocol, ListenerAction, ListenerCertificate } from '@aws-cdk/aws-elasticloadbalancingv2';
 
-const useSubnet = (name: string, cidrMask: number, subnetType: ec2.SubnetType): SubnetConfiguration => ({
+const withSubnet = (name: string, cidrMask: number, subnetType: ec2.SubnetType): SubnetConfiguration => ({
   cidrMask,
   name,
   subnetType,
@@ -20,13 +20,11 @@ export class KeycloakCdkStack extends cdk.Stack {
     super(scope, id, props);
 
     const paramKeycloakAdminPassword = new cdk.CfnParameter(this, 'keycloakAdminPassword', {
-      //default: this.node.tryGetContext('keycloakAdminPassword'),
       type: "String",
       noEcho: true
     })
 
     const paramSslCertArn = new cdk.CfnParameter(this, 'sslCertArn', {
-      //default: this.node.tryGetContext('sslCertArn'),
       type: "String"
     })
 
@@ -35,9 +33,9 @@ export class KeycloakCdkStack extends cdk.Stack {
       maxAzs: 2,
       natGateways: 1,
       subnetConfiguration: [
-        useSubnet('ingress', 24, ec2.SubnetType.PUBLIC),
-        useSubnet('application', 24, ec2.SubnetType.PRIVATE),
-        useSubnet('data', 24, ec2.SubnetType.ISOLATED)
+        withSubnet('ingress', 24, ec2.SubnetType.PUBLIC),
+        withSubnet('application', 24, ec2.SubnetType.PRIVATE),
+        withSubnet('data', 24, ec2.SubnetType.ISOLATED)
       ]
     });
 
@@ -79,7 +77,6 @@ export class KeycloakCdkStack extends cdk.Stack {
         KEYCLOAK_PASSWORD: paramKeycloakAdminPassword.valueAsString,
         PROXY_ADDRESS_FORWARDING: 'true'
       },
-
       logging: LogDriver.awsLogs({ streamPrefix: 'Keycloak' })
     });
 
